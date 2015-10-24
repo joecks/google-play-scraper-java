@@ -1,3 +1,5 @@
+package de.halfreal.googleplayscraper.service;
+
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -9,7 +11,6 @@ import com.squareup.okhttp.ResponseBody;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
@@ -17,16 +18,15 @@ import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import de.halfreal.googleplayscraper.model.App;
 import de.halfreal.googleplayscraper.model.GooglePlayDataFactory;
-import de.halfreal.googleplayscraper.service.GooglePlayService;
 import retrofit.Retrofit;
+import rx.Observable;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -64,7 +64,7 @@ public class GooglePlayServiceTest {
         verify(m_client).newCall(m_requestArgumentCaptor.capture());
 
         assertThat(m_requestArgumentCaptor.getValue().httpUrl().toString(),
-                is(String.format("%s/search?c=apps&q=Test&hl=en&lang=us", BASE_URL)));
+                is(String.format("%s/store/search?c=apps&q=Test&hl=en&lang=us", BASE_URL)));
     }
 
     @Test
@@ -74,9 +74,36 @@ public class GooglePlayServiceTest {
         verify(m_client).newCall(m_requestArgumentCaptor.capture());
 
         assertThat(m_requestArgumentCaptor.getValue().httpUrl().toString(),
-                is(String.format("%s/search?c=apps&q=Test&hl=en&lang=us&pagTok=token", BASE_URL)));
+                is(String.format("%s/store/search?c=apps&q=Test&hl=en&lang=us&pagTok=token", BASE_URL)));
     }
 
+    @Test
+    public void test_SearchWithResults_HasCartElements() throws Throwable {
+        when(m_client.newCall(any(Request.class)))
+                .thenAnswer(withFile("search-response.html"));
+
+        Observable<App> body = m_service.search("Test", "en", "us", null).execute().body();
+
+        assertThat(body.toList().toBlocking().first().size(), is(20));
+    }
+
+    @Test
+    public void test_SearchFirstElement_ContainsAppIdTitleDeveloperIconScorePriceAndIfItisFree() throws Throwable {
+        when(m_client.newCall(any(Request.class)))
+                .thenAnswer(withFile("search-response.html"));
+
+        Observable<App> body = m_service.search("Test", "en", "us", null).execute().body();
+
+        App app = body.toBlocking().first();
+        assertThat(app.getAppId(), is("com.lukaville.mental.age"));
+        assertThat(app.getTitle(), is("Mental Age Test"));
+        assertThat(app.getDeveloper(), is("Dainty Apps"));
+        assertThat(app.getIcon(), is("https://lh5.ggpht.com/Cron7ycndvE5QUT9CHx72cIDqchqCUca-mtQSYv6_18HDwkCWgNBQueZ51uUMdUuzQ=w340"));
+        assertThat(app.getScore(), is(3.2f));
+        assertThat(app.getPrice(), is(nullValue()));
+        assertThat(app.getUrl(), is("https://play.google.com/store/apps/details?id=com.lukaville.mental.age"));
+        assertThat(app.isFree(), is(true));
+    }
 
 
     private Answer<Call> withString(final String content) throws Throwable {

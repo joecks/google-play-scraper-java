@@ -22,5 +22,8 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup.retrofit:retrofit-mock:2.0.0-beta2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.mockito:mockito-all:1.8.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.jsoup:jsoup:1.8.3" level="project" />
+    <orderEntry type="library" name="Gradle: javax.validation:validation-api:1.1.0.Final" level="project" />
+    <orderEntry type="library" name="Gradle: io.reactivex:rxjava:1.0.14" level="project" />
   </component>
 </module>
