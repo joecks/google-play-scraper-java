@@ -16,7 +16,7 @@ import retrofit.Converter;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class AppListConverter implements Converter<ResponseBody, Observable<App>> {
+public class AppListConverter implements Converter<ResponseBody, Response> {
 
     public AppListConverter(@NotNull String baseUrl) {
         m_baseUrl = baseUrl;
@@ -26,15 +26,24 @@ public class AppListConverter implements Converter<ResponseBody, Observable<App>
     private final String m_baseUrl;
 
     @Override
-    public Observable<App> convert(ResponseBody value) throws IOException {
+    public Response convert(ResponseBody value) throws IOException {
         Document doc = Jsoup.parse(value.byteStream(), "UTF-8", m_baseUrl);
-        return Observable.from(doc.select(".card"))
+        Matcher matcher = Pattern.compile("\\\\42(GAE.+?)\\\\42").matcher(doc.html());
+        String token =null ;
+        if (matcher.find()) {
+            token = matcher.group(1);
+        }
+        //return s[1].replace(/\\\\u003d/g, '=');
+        if (token != null) {
+            token = token.replace("\\\\u003d", "=");
+        }
+        return new Response(Observable.from(doc.select(".card"))
                 .map(new Func1<Element, App>() {
                     @Override
                     public App call(Element element) {
                         return parseApp(element);
                     }
-                });
+                }), token);
     }
 
     @NotNull
