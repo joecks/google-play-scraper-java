@@ -20,20 +20,19 @@ import org.mockito.stubbing.Answer;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import de.halfreal.googleplayscraper.TestHelper;
+import de.halfreal.googleplayscraper.api.GooglePlayApi;
 import de.halfreal.googleplayscraper.model.App;
+import de.halfreal.googleplayscraper.model.AppResponse;
 import de.halfreal.googleplayscraper.model.GooglePlayDataFactory;
-import de.halfreal.googleplayscraper.model.Response;
-import javafx.util.Pair;
 import retrofit.Retrofit;
 import retrofit.RxJavaCallAdapterFactory;
 import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.functions.Func2;
 
+import static de.halfreal.googleplayscraper.TestHelper.withFile;
+import static de.halfreal.googleplayscraper.TestHelper.withString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -57,6 +56,7 @@ public class GooglePlayServiceTest {
         m_client = new OkHttpClient();
         MockitoAnnotations.initMocks(this);
         Retrofit retrofit = new Retrofit.Builder()
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .baseUrl(BASE_URL)
                 .client(m_client)
                 .addConverterFactory(new GooglePlayDataFactory())
@@ -69,22 +69,22 @@ public class GooglePlayServiceTest {
 
     @Test
     public void test_SearchWithoutNextToken_isFormatedWithoutToken() throws IOException {
-        m_service.search("Test", "en", "us", null).execute();
+        m_service.search("Test", "en", "us", null).toBlocking().single();
 
         verify(m_client).newCall(m_requestArgumentCaptor.capture());
 
         assertThat(m_requestArgumentCaptor.getValue().httpUrl().toString(),
-                is(String.format("%s/store/search?c=apps&q=Test&hl=en&lang=us", BASE_URL)));
+                is(String.format("%s/store/search?c=apps&q=Test&hl=en&gl=us", BASE_URL)));
     }
 
     @Test
     public void test_SearchWithNextToken_isFormatedWithToken() throws IOException {
-        m_service.search("Test", "en", "us", "token").execute();
+        m_service.search("Test", "en", "us", "token").toBlocking().single();
 
         verify(m_client).newCall(m_requestArgumentCaptor.capture());
 
         assertThat(m_requestArgumentCaptor.getValue().httpUrl().toString(),
-                is(String.format("%s/store/search?c=apps&q=Test&hl=en&lang=us&pagTok=token", BASE_URL)));
+                is(String.format("%s/store/search?c=apps&q=Test&hl=en&gl=us&pagTok=token", BASE_URL)));
     }
 
     @Test
@@ -92,9 +92,9 @@ public class GooglePlayServiceTest {
         when(m_client.newCall(any(Request.class)))
                 .thenAnswer(withFile("search-response.html"));
 
-        Observable<App> body = m_service.search("Test", "en", "us", null).execute().body();
+        final AppResponse response = m_service.search("Test", "en", "us", null).toBlocking().single();
 
-        assertThat(body.toList().toBlocking().first().size(), is(20));
+        assertThat(response.getApps().size(), is(20));
     }
 
     @Test
@@ -102,9 +102,9 @@ public class GooglePlayServiceTest {
         when(m_client.newCall(any(Request.class)))
                 .thenAnswer(withFile("search-response.html"));
 
-        Observable<App> body = m_service.search("Test", "en", "us", null).execute().body();
+        AppResponse response = m_service.search("Test", "en", "us", null).toBlocking().first();
 
-        App app = body.toBlocking().first();
+        App app = response.getApps().get(0);
         assertThat(app.getAppId(), is("com.lukaville.mental.age"));
         assertThat(app.getTitle(), is("Mental Age Test"));
         assertThat(app.getDeveloper(), is("Dainty Apps"));
@@ -115,98 +115,20 @@ public class GooglePlayServiceTest {
         assertThat(app.isFree(), is(true));
     }
 
-    @Test
-    public void textX() {
-        final GooglePlayService service = new Retrofit.Builder()
-                .baseUrl(GooglePlayService.BASE_URL)
-                .addConverterFactory(new GooglePlayDataFactory())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build()
-                .create(GooglePlayService.class);
 
-
-
-
-        final Observable<Pair<String, Subscriber>> requestObservable = Observable.create(new Observable.OnSubscribe<Pair<String, Subscriber>>() {
-            @Override
-            public void call(Subscriber<? super Pair<String, Subscriber>> upstream) {
-                upstream.onNext(new Pair<String, Subscriber>(null, upstream));
-            }
-        });
-
-        final AtomicInteger requestCounter = new AtomicInteger();
-
-        final Observable<Observable<App>> response = Observable.create(new Observable.OnSubscribe<Response>() {
-            @Override
-            public void call(final Subscriber<? super Response> downstream) {
-                requestObservable.map(new Func1<Pair<String, Subscriber>, Pair<Observable<Response>, Subscriber>>() {
-                    @Override
-                    public Pair<Observable<Response>, Subscriber> call(Pair<String, Subscriber> pair) {
-                        final Observable<Response> responseObservable = service.searchX("Clipboard Action", "en", "us", pair.getKey());
-                        return new Pair<Observable<Response>, Subscriber>(responseObservable, pair.getValue());
-                    }
-                }).doOnNext(new Action1<Pair<Observable<Response>, Subscriber>>() {
-                    @Override
-                    public void call(Pair<Observable<Response>, Subscriber> pair) {
-                        final Response response = pair.getKey().toBlocking().first();
-                        downstream.onNext(response);
-                        final Subscriber upstream = pair.getValue();
-                        final String token = response.getToken();
-                        if (requestCounter.get() < 10 && token != null) {
-                            requestCounter.set(requestCounter.get() + 1);
-                            upstream.onNext(new Pair<String, Subscriber>(token, upstream));
-                        } else {
-                            upstream.onCompleted();
-                            downstream.onCompleted();
-                        }
-                    }
-                }).toBlocking().first();;
-            }
-        }).map(new Func1<Response, Observable<App>>() {
-            @Override
-            public Observable<App> call(Response response) {
-                return response.getApps();
-            }
-        }).reduce(new Func2<Observable<App>, Observable<App>, Observable<App>>() {
-            @Override
-            public Observable<App> call(Observable<App> appObservable, Observable<App> appObservable2) {
-                return appObservable.concatWith(appObservable2);
-            }
-        });
-
-
-        final List<Observable<App>> apps = response.toList().toBlocking().first();
-
-        Assert.assertTrue(apps.size() + " , 10", apps.size() == 10);
-    }
-
-
-    private Answer<Call> withString(final String content) throws Throwable {
-        return new Answer<Call>() {
-            @Override
-            public Call answer(InvocationOnMock invocation) throws Throwable {
-                Call mock = mock(Call.class);
-                ResponseBody body = ResponseBody.create(MediaType.parse("text/html"),
-                        content);
-                com.squareup.okhttp.Response response = new com.squareup.okhttp.Response.Builder()
-                        .request((Request) invocation.getArguments()[0])
-                        .code(200)
-                        .protocol(Protocol.HTTP_1_1)
-                        .body(body)
-                        .build();
-                when(mock.execute()).thenReturn(response);
-                return mock;
-            }
-        };
-    }
-
-    private Answer<Call> withFile(final String file) throws Throwable {
-        return withString(fromFile(file));
-    }
-
-    private String fromFile(String file) throws URISyntaxException, IOException {
-        java.net.URL url = GooglePlayServiceTest.class.getResource(file);
-        java.nio.file.Path resPath = java.nio.file.Paths.get(url.toURI());
-        return new String(java.nio.file.Files.readAllBytes(resPath), "UTF8");
-    }
+//    @Test
+//    public void textX() {
+//        final GooglePlayApi googlePlayApi = new GooglePlayApi();
+//
+//        final Observable<List<App>> search = googlePlayApi.search("Clipboard Action", "en", "us", 2);
+//
+//        final List<App> apps = search.flatMap(new Func1<List<App>, Observable<App>>() {
+//            @Override
+//            public Observable<App> call(List<App> apps) {
+//                return Observable.from(apps);
+//            }
+//        }).toList().toBlocking().single();
+//
+//        Assert.assertTrue(apps.size() + " , 20", apps.size() == 20);
+//    }
 }

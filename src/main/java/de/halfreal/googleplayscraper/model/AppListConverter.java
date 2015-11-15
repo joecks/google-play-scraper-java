@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +17,7 @@ import retrofit.Converter;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class AppListConverter implements Converter<ResponseBody, Response> {
+public class AppListConverter implements Converter<ResponseBody, AppResponse> {
 
     public AppListConverter(@NotNull String baseUrl) {
         m_baseUrl = baseUrl;
@@ -26,7 +27,7 @@ public class AppListConverter implements Converter<ResponseBody, Response> {
     private final String m_baseUrl;
 
     @Override
-    public Response convert(ResponseBody value) throws IOException {
+    public AppResponse convert(ResponseBody value) throws IOException {
         Document doc = Jsoup.parse(value.byteStream(), "UTF-8", m_baseUrl);
         Matcher matcher = Pattern.compile("\\\\42(GAE.+?)\\\\42").matcher(doc.html());
         String token =null ;
@@ -37,13 +38,14 @@ public class AppListConverter implements Converter<ResponseBody, Response> {
         if (token != null) {
             token = token.replace("\\\\u003d", "=");
         }
-        return new Response(Observable.from(doc.select(".card"))
+        final List<App> apps = Observable.from(doc.select(".card"))
                 .map(new Func1<Element, App>() {
                     @Override
                     public App call(Element element) {
                         return parseApp(element);
                     }
-                }), token);
+                }).toList().toBlocking().first();
+        return new AppResponse(apps, token);
     }
 
     @NotNull
