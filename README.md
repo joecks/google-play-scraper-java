@@ -19,7 +19,7 @@ repositories {
 ```
 
 ```gradle
-compile 'de.halfreal.googleplayscraper:googleplayscraper:1.0.0-SNAPSHOT'
+compile 'de.halfreal.googleplayscraper:googleplayscraper-java:1.0.0-SNAPSHOT'
 ```
 
 ### Getting started
