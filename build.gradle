@@ -50,11 +50,10 @@ uploadArchives {
     repositories.mavenDeployer {
         def deployPath = file('release')
         repository(url: "file://${deployPath.absolutePath}")
-        snapshotRepository(url: "file://${deployPath.absolutePath}")
         pom.project {
             groupId 'de.halfreal.googleplayscraper'
             artifactId 'googleplayscraper-java'
-            version "1.0.0-SNAPSHOT"
+            version "1.0.0"
         }
     }
 }

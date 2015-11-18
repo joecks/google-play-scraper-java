@@ -7,6 +7,21 @@ It is purly written in Java and uses **JavaRx** and **Retrofit**.
 
 
 ## Usage
+
+### Gradle
+Add it as dependency. Fist add the repository and then the compile dependeny:
+
+```gradle
+repositories {
+    mavenCentral()
+    maven { url "https://raw.githubusercontent.com/joecks/google-play-scraper-java/master/release/" }
+}
+```
+
+```gradle
+compile 'de.halfreal.googleplayscraper:googleplayscraper:1.0.0-SNAPSHOT'
+```
+
 ### Getting started
 
 ```java
