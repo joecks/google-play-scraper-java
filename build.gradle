@@ -42,5 +42,19 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.8.4'
     testCompile 'com.squareup.retrofit:retrofit-mock:2.0.0-beta2'
+}
 
+apply plugin: 'maven'
+
+uploadArchives {
+    repositories.mavenDeployer {
+        def deployPath = file('release')
+        repository(url: "file://${deployPath.absolutePath}")
+        snapshotRepository(url: "file://${deployPath.absolutePath}")
+        pom.project {
+            groupId 'de.halfreal.googleplayscraper'
+            artifactId 'googleplayscraper-java'
+            version "1.0.0-SNAPSHOT"
+        }
+    }
 }

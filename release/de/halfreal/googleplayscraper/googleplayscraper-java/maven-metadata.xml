@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>de.halfreal.googleplayscraper</groupId>
+  <artifactId>googleplayscraper-java</artifactId>
+  <versioning>
+    <versions>
+      <version>1.0.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20151118230639</lastUpdated>
+  </versioning>
+</metadata>
