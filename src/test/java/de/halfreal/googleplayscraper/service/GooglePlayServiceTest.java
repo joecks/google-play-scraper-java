@@ -1,35 +1,19 @@
 package de.halfreal.googleplayscraper.service;
 
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Protocol;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.ResponseBody;
-
-import junit.framework.Assert;
-
+import de.halfreal.googleplayscraper.model.App;
+import de.halfreal.googleplayscraper.model.AppResponse;
+import de.halfreal.googleplayscraper.model.GooglePlayDataFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-
-import de.halfreal.googleplayscraper.TestHelper;
-import de.halfreal.googleplayscraper.api.GooglePlayApi;
-import de.halfreal.googleplayscraper.model.App;
-import de.halfreal.googleplayscraper.model.AppResponse;
-import de.halfreal.googleplayscraper.model.GooglePlayDataFactory;
 import retrofit.Retrofit;
 import retrofit.RxJavaCallAdapterFactory;
-import rx.Observable;
-import rx.functions.Func1;
+
+import java.io.IOException;
 
 import static de.halfreal.googleplayscraper.TestHelper.withFile;
 import static de.halfreal.googleplayscraper.TestHelper.withString;
@@ -37,10 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class GooglePlayServiceTest {
 
