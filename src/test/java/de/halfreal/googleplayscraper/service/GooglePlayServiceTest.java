@@ -49,7 +49,7 @@ public class GooglePlayServiceTest {
     }
 
     @Test
-    public void test_SearchWithoutNextToken_isFormatedWithoutToken() throws IOException {
+    public void test_SearchWithoutNextToken_isFormattedWithoutToken() throws IOException {
         m_service.search("Test", "en", "us", null).toBlocking().single();
 
         verify(m_client).newCall(m_requestArgumentCaptor.capture());
@@ -59,7 +59,7 @@ public class GooglePlayServiceTest {
     }
 
     @Test
-    public void test_SearchWithNextToken_isFormatedWithToken() throws IOException {
+    public void test_SearchWithNextToken_isFormattedWithToken() throws IOException {
         m_service.search("Test", "en", "us", "token").toBlocking().single();
 
         verify(m_client).newCall(m_requestArgumentCaptor.capture());
