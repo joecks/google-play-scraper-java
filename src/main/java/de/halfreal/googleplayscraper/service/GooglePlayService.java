@@ -13,5 +13,8 @@ public interface GooglePlayService {
     String BASE_URL = "https://play.google.com";
 
     @GET("/store/search?c=apps")
-    Observable<AppResponse> search(@Query("q") String query, @Query("hl") String language, @Query("gl") String country, @Query("pagTok") String nextToken);
+    Observable<AppResponse> search(@Query("q") String query,
+                                   @Query("hl") String language,
+                                   @Query("gl") String country,
+                                   @Query("pagTok") String nextToken);
 }

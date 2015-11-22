@@ -34,7 +34,8 @@ public class GooglePlayApi {
         m_service = service;
     }
 
-    public Observable<List<App>> search(@NotNull final String query, @NotNull final String language, @NotNull final String country, final int maxPages) {
+    public Observable<List<App>> search(@NotNull final String query, @NotNull final String language,
+                                        @NotNull final String country, final int maxPages) {
         final AtomicInteger page = new AtomicInteger(0);
 
         return Observable.create(new Observable.OnSubscribe<List<App>>() {
