@@ -2,18 +2,23 @@ package de.halfreal.googleplayscraper.service;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
-import de.halfreal.googleplayscraper.model.App;
-import de.halfreal.googleplayscraper.model.AppResponse;
-import de.halfreal.googleplayscraper.model.GooglePlayDataFactory;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import retrofit.Retrofit;
-import retrofit.RxJavaCallAdapterFactory;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Observable;
+
+import de.halfreal.googleplayscraper.api.GooglePlayApi;
+import de.halfreal.googleplayscraper.model.App;
+import de.halfreal.googleplayscraper.model.AppResponse;
+import de.halfreal.googleplayscraper.model.GooglePlayDataFactory;
+import retrofit.Retrofit;
+import retrofit.RxJavaCallAdapterFactory;
 
 import static de.halfreal.googleplayscraper.TestHelper.withFile;
 import static de.halfreal.googleplayscraper.TestHelper.withString;
@@ -21,7 +26,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class GooglePlayServiceTest {
 
@@ -95,21 +102,4 @@ public class GooglePlayServiceTest {
         assertThat(app.getUrl(), is("https://play.google.com/store/apps/details?id=com.lukaville.mental.age"));
         assertThat(app.isFree(), is(true));
     }
-
-
-//    @Test
-//    public void textX() {
-//        final GooglePlayApi googlePlayApi = new GooglePlayApi();
-//
-//        final Observable<List<App>> search = googlePlayApi.search("Clipboard Action", "en", "us", 2);
-//
-//        final List<App> apps = search.flatMap(new Func1<List<App>, Observable<App>>() {
-//            @Override
-//            public Observable<App> call(List<App> apps) {
-//                return Observable.from(apps);
-//            }
-//        }).toList().toBlocking().single();
-//
-//        Assert.assertTrue(apps.size() + " , 20", apps.size() == 20);
-//    }
 }

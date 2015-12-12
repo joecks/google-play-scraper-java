@@ -20,18 +20,26 @@ public class GooglePlayApi {
 
     @NotNull
     private final GooglePlayService m_service;
-    //private final RequestBehaviotr m_behavior;
+    private final RequestBehavior m_requestBehavior;
 
     public GooglePlayApi() {
+        this(null);
+    }
+
+    public GooglePlayApi(@NotNull RequestBehavior requestBehavior) {
         this(new Retrofit.Builder()
                 .baseUrl(GooglePlayService.BASE_URL)
                 .addConverterFactory(new GooglePlayDataFactory())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build()
-                .create(GooglePlayService.class));
+                .create(GooglePlayService.class), requestBehavior);
     }
 
-    GooglePlayApi(@NotNull GooglePlayService service) {
+    GooglePlayApi(@NotNull GooglePlayService service, RequestBehavior requestBehavior) {
+        if (requestBehavior == null) {
+            requestBehavior = new RequestBehavior();
+        }
+        m_requestBehavior = requestBehavior;
         m_service = service;
     }
 
@@ -45,19 +53,24 @@ public class GooglePlayApi {
                 String token = null;
                 if (maxPages > 0) {
                     do {
-                        final Observable<AppResponse> search = m_service.search(query, language, country, token);
-                        final AppResponse response = search
-                                .doOnError(new Action1<Throwable>() {
-                                    @Override
-                                    public void call(Throwable throwable) {
-                                        subscriber.onError(throwable);
-                                    }
-                                })
-                                .toBlocking()
-                                .firstOrDefault(null);
-                        if (response != null) {
-                            token = response.getToken();
-                            subscriber.onNext(response.getApps());
+                        try {
+                            m_requestBehavior.awaitContinue();
+                            final Observable<AppResponse> search = m_service.search(query, language, country, token);
+                            final AppResponse response = search
+                                    .doOnError(new Action1<Throwable>() {
+                                        @Override
+                                        public void call(Throwable throwable) {
+                                            subscriber.onError(throwable);
+                                        }
+                                    })
+                                    .toBlocking()
+                                    .firstOrDefault(null);
+                            if (response != null) {
+                                token = response.getToken();
+                                subscriber.onNext(response.getApps());
+                            }
+                        } catch (InterruptedException e) {
+                            subscriber.onError(e);
                         }
                     } while (page.incrementAndGet() < maxPages
                             && token != null

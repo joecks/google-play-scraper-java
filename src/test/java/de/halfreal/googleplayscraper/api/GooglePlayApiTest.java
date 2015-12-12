@@ -34,7 +34,7 @@ public class GooglePlayApiTest {
     @Before
     public void setUp() throws Throwable {
         MockitoAnnotations.initMocks(this);
-        m_api = new GooglePlayApi(m_service);
+        m_api = new GooglePlayApi(m_service, null);
         when(m_service.search(anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(Observable.just(new AppResponse(null, null)));
     }

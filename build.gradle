@@ -33,14 +33,12 @@ dependencies {
     compile 'javax.validation:validation-api:1.1.0.Final'
     compile 'io.reactivex:rxjava:1.0.14'
 
-
-
     // Declare the dependency for your favourite test framework you want to use in your tests.
     // TestNG is also supported by the Gradle Test task. Just change the
     // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-all:1.8.4'
+    testCompile 'org.mockito:mockito-all:1.10.19'
     testCompile 'com.squareup.retrofit:retrofit-mock:2.0.0-beta2'
 }
 
