@@ -20,6 +20,7 @@ public class GooglePlayApi {
 
     @NotNull
     private final GooglePlayService m_service;
+    //private final RequestBehaviotr m_behavior;
 
     public GooglePlayApi() {
         this(new Retrofit.Builder()
@@ -58,7 +59,9 @@ public class GooglePlayApi {
                             token = response.getToken();
                             subscriber.onNext(response.getApps());
                         }
-                    } while (page.incrementAndGet() < maxPages && token != null);
+                    } while (page.incrementAndGet() < maxPages
+                            && token != null
+                            && !subscriber.isUnsubscribed());
                 }
                 subscriber.onCompleted();
             }
