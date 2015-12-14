@@ -15,7 +15,6 @@ import de.halfreal.googleplayscraper.model.AppResponse;
 import de.halfreal.googleplayscraper.service.GooglePlayService;
 import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.subjects.PublishSubject;
 
 import static org.mockito.Matchers.anyString;
@@ -29,7 +28,6 @@ public class GooglePlayApiTest {
     private GooglePlayApi m_api;
     @Mock
     private GooglePlayService m_service;
-    private Subscription m_subscribe;
 
     @Before
     public void setUp() throws Throwable {

@@ -1,5 +1,11 @@
 package de.halfreal.googleplayscraper.api;
 
+import com.squareup.okhttp.Interceptor;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,11 +34,29 @@ public class GooglePlayApi {
 
     public GooglePlayApi(@NotNull RequestBehavior requestBehavior) {
         this(new Retrofit.Builder()
+                .client(createClient(requestBehavior))
                 .baseUrl(GooglePlayService.BASE_URL)
                 .addConverterFactory(new GooglePlayDataFactory())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build()
                 .create(GooglePlayService.class), requestBehavior);
+    }
+
+    private static OkHttpClient createClient(final RequestBehavior behavior) {
+        OkHttpClient client = new OkHttpClient();
+        client.interceptors().add(new Interceptor() {
+
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request request = chain
+                        .request()
+                        .newBuilder()
+                        .addHeader("user-agent", behavior.userAgent())
+                        .build();
+                return chain.proceed(request);
+            }
+        });
+        return client;
     }
 
     GooglePlayApi(@NotNull GooglePlayService service, RequestBehavior requestBehavior) {

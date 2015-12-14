@@ -1,13 +1,11 @@
 package de.halfreal.googleplayscraper.service;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.halfreal.googleplayscraper.api.GooglePlayApi;
 import de.halfreal.googleplayscraper.api.HumanRequestBehavior;
@@ -45,16 +43,17 @@ public class GooglePlayServiceEndToEndTest {
 
     @Test
     public void text_MaxCallsToGooglePlay_WillPassWithout503() throws InterruptedException {
-        final GooglePlayApi googlePlayApi = new GooglePlayApi(new HumanRequestBehavior(10000, 10000));
+        final GooglePlayApi googlePlayApi = new GooglePlayApi(new HumanRequestBehavior(3000, 3000));
 
         final int parallelExecutions = 10;
         final CountDownLatch countDownLatch = new CountDownLatch(parallelExecutions);
         for (int i = 0; i < parallelExecutions; i++) {
-            final int finalI = i;
+            final int count = i;
+            System.out.println("Thread started #" + count);
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final Observable<List<App>> search = googlePlayApi.search("Clipboard Action " + finalI, "en", "us", 10);
+                    final Observable<List<App>> search = googlePlayApi.search("Game " + (int)(Math.random()*1000), "en", "us", 7);
                     search
                             .flatMap(MAP_TO_OBSERVABLE)
                             .toList()
@@ -74,6 +73,7 @@ public class GooglePlayServiceEndToEndTest {
 
                                 @Override
                                 public void onNext(List<App> apps) {
+                                    System.out.println("Thread completed #" + count + " Results: " + apps.size());
                                 }
                             });
                 }

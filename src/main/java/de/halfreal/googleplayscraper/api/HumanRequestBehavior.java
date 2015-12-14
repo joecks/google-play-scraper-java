@@ -7,7 +7,7 @@ public class HumanRequestBehavior extends RequestBehavior {
 
 
     public HumanRequestBehavior() {
-        this(5000, 1000);
+        this(3000, 3000);
     }
 
     public HumanRequestBehavior(long timeMultiplier, long humanBaseTime) {
